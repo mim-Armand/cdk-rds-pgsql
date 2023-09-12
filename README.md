@@ -1,6 +1,6 @@
-# Welcome to your CDK TypeScript project
+# Welcome to this CDK TypeScript project
 
-This is a blank project for CDK development with TypeScript.
+This CDK will create a small PostgreSQL RDS.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

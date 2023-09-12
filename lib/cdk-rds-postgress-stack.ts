@@ -41,6 +41,8 @@ export class CdkRdsPgdslStack extends cdk.Stack {
       engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_15_3 }),
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
       vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      publiclyAccessible: true,
       allocatedStorage: 15,
       backupRetention: cdk.Duration.days(3),
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -49,6 +51,10 @@ export class CdkRdsPgdslStack extends cdk.Stack {
     });
     dbInstance.grantConnect(rdsRole, "postgresadmin");
     // dbInstance.node.addDependency(rdsRole)
+
+    const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DatabaseSecurityGroup', dbInstance.connections.securityGroups[0].securityGroupId);
+    securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5432), 'Allow all IPv4 traffic on port 5432 just for demo/temporary usecases');
+
 
     const dbInstanceEndpointAddress = dbInstance.dbInstanceEndpointAddress;
     const dbInstanceEndpointPort = dbInstance.dbInstanceEndpointPort;
