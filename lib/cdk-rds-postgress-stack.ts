@@ -17,6 +17,7 @@ export class CdkRdsPgdslStack extends cdk.Stack {
         });
         const dbName = 'my_initial_database'; // Database name for the RDS instance,
         const vpcName = 'Athena-POC-VPC'; // VPC name
+        const secretName = 'rds-db-secrets'; // The secret name that can be used as secret name prefix to obtain the secret in other systems
         const vpc = new ec2.Vpc(this, vpcName, {maxAzs: 2}); // Create a new VPC with a maximum of 2 availability zones
         const rdsRole = new iam.Role(this, 'RDSRole', { // Create a new IAM role that can be assumed by the RDS service
             assumedBy: new iam.ServicePrincipal('rds.amazonaws.com'),
@@ -32,6 +33,7 @@ export class CdkRdsPgdslStack extends cdk.Stack {
         }));
         // Create a new secret in Secrets Manager to store the database credentials
         const dbSecret = new secretsmanager.Secret(this, 'DBSecret', {
+            secretName,
             generateSecretString: {
                 secretStringTemplate: JSON.stringify({username: 'postgresadmin'}),
                 generateStringKey: 'password',
