@@ -57,11 +57,20 @@ export class CdkRdsPgdslStack extends cdk.Stack {
         dbInstance.grantConnect(rdsRole, "postgresadmin");
         // Retrieve the security group of the RDS instance and add an ingress rule to allow traffic on port 5432
         const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DatabaseSecurityGroup', dbInstance.connections.securityGroups[0].securityGroupId);
-        securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5432), 'Allow all IPv4 traffic on port 5432 just for demo/temporary usecases');
+        // securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5432), 'Allow all IPv4 traffic on port 5432 just for demo/temporary usecases');
+        securityGroup.addIngressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.allTraffic(), 'Allow all traffic from Lambda function within the VPC');
         // Get endpoint and port details of the RDS instance
         const dbInstanceEndpointAddress = dbInstance.dbInstanceEndpointAddress;
         const dbInstanceEndpointPort = dbInstance.dbInstanceEndpointPort;
         const dbSecurityGroupId = dbInstance.connections.securityGroups[0].securityGroupId;
+
+        // vpc.addInterfaceEndpoint('lambdaEndpoint', {});
+        const vpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'EndpointService', {
+            service: ec2.InterfaceVpcEndpointAwsService.LAMBDA,
+            vpc,
+            privateDnsEnabled: false,
+            securityGroups: [securityGroup]
+        });
 
         // Output various details about the created resources as CloudFormation outputs, you can add and remove as you need
         new cdk.CfnOutput(this, 'AthenaVpcIdOutput', {
