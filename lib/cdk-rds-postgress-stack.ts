@@ -26,15 +26,17 @@ export class CdkRdsPgdslStack extends cdk.Stack {
                 cidrMask: 24,
                 name: 'ingress',
                 subnetType: SubnetType.PUBLIC,
-            },{
-                cidrMask: 24,
-                name: 'compute',
-                subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-            },{
-                cidrMask: 28,
-                name: 'rds',
-                subnetType: SubnetType.PRIVATE_ISOLATED,
-            }]
+            },
+            //{
+            //     cidrMask: 24,
+            //     name: 'compute',
+            //     subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+            // },{
+            //     cidrMask: 28,
+            //     name: 'rds',
+            //     subnetType: SubnetType.PRIVATE_ISOLATED,
+            // }
+            ]
         }); // Create a new VPC with a maximum of 2 availability zones
         const rdsRole = new iam.Role(this, 'RDSRole', { // Create a new IAM role that can be assumed by the RDS service
             assumedBy: new iam.ServicePrincipal('rds.amazonaws.com'),
@@ -109,13 +111,12 @@ export class CdkRdsPgdslStack extends cdk.Stack {
             value: vpc.vpcId,
             exportName: 'AthenaVpcIdOutput'
         });
-        new cdk.CfnOutput(this, 'AthenaVpcPrivateSubnetsOutput', {
-            // value: JSON.stringify(vpc.privateSubnets.map(subnet => subnet.subnetId)),
-            value: vpc.privateSubnets.map(subnet => subnet.subnetId).join(','),
-            exportName: 'AthenaVpcPrivateSubnetsOutput-2',
-        });
+        // new cdk.CfnOutput(this, 'AthenaVpcPrivateSubnetsOutput', {
+        //     // value: JSON.stringify(vpc.privateSubnets.map(subnet => subnet.subnetId)),
+        //     value: vpc.privateSubnets.map(subnet => subnet.subnetId).join(','),
+        //     exportName: 'AthenaVpcPrivateSubnetsOutput-2',
+        // });
         new cdk.CfnOutput(this, 'AthenaVpcPublicSubnetsOutput', {
-            // value: JSON.stringify(vpc.privateSubnets.map(subnet => subnet.subnetId)),
             value: vpc.publicSubnets.map(subnet => subnet.subnetId).join(','),
             exportName: 'AthenaVpcPublicSubnetsOutput-2',
         });
