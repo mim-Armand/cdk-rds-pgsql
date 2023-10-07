@@ -62,7 +62,7 @@ export class CdkRdsPgdslStack extends cdk.Stack {
         });
         // Create a new RDS instance
         const dbInstance = new rds.DatabaseInstance(this, 'DatabaseInstance', {
-            engine: rds.DatabaseInstanceEngine.postgres({version: rds.PostgresEngineVersion.VER_14}), // Glue/JDBC doesn't support higher versions as of now. :(
+            engine: rds.DatabaseInstanceEngine.postgres({version: rds.PostgresEngineVersion.VER_13}), // Glue/JDBC doesn't support higher versions as of now. :(
             instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
             vpc,
             vpcSubnets: {
@@ -94,17 +94,32 @@ export class CdkRdsPgdslStack extends cdk.Stack {
             service: ec2.InterfaceVpcEndpointAwsService.LAMBDA,
             open: true, // allow VPC traffic to the endpoint.
             vpc,
-            privateDnsEnabled: true,
+            privateDnsEnabled: true, //  If set to true, you can connect to the service using its default DNS hostname.
             securityGroups: [securityGroup]
         });
 
         new ec2.InterfaceVpcEndpoint(this, 'EndpointService2', {
             service: ec2.InterfaceVpcEndpointAwsService.GLUE,
-            open: true,
+            open: true, //  Indicates whether the service should allow all traffic or not.
             vpc,
-            privateDnsEnabled: true,
+            privateDnsEnabled: true, //  If set to true, you can connect to the service using its default DNS hostname.
             securityGroups: [securityGroup]
-        })
+        });
+
+        // Add Secrets Manager VPC Endpoint
+        new ec2.InterfaceVpcEndpoint(this, 'SecretsManagerEndpoint', {
+            service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+            open: true, //  Indicates whether the service should allow all traffic or not.
+            vpc,
+            privateDnsEnabled: true, //  If set to true, you can connect to the service using its default DNS hostname.
+            securityGroups: [securityGroup]
+        });
+
+        const s3Endpoint = vpc.addGatewayEndpoint('S3Endpoint', {
+            service: ec2.GatewayVpcEndpointAwsService.S3,
+        });
+        // Tag the S3 VPC Endpoint with a name
+        cdk.Tags.of(s3Endpoint).add('Name', 'demoS3GatewayEndpoint');
 
         // Output various details about the created resources as CloudFormation outputs, you can add and remove as you need
         new cdk.CfnOutput(this, 'AthenaVpcIdOutput', {
